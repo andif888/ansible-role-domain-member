@@ -1,0 +1,16 @@
+---
+pkgs: 
+  - realmd
+  - sssd
+  - sssd-tools
+  - oddjob
+  - oddjob-mkhomedir
+  - adcli
+  - samba-common-bin
+  - libnss-sss
+  - libpam-sss
+  - packagekit
+  - ntp
+  - ntpdate
+
+domain_admin_user_short: administrator
