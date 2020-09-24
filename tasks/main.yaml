@@ -2,6 +2,7 @@
 - name: Installing Required packages
   apt: 
     name: "{{ pkgs }}"
+    update_cache: yes
     state: present
 
 - name: Add ntp servers
