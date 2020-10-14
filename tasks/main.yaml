@@ -88,6 +88,6 @@
      path: /etc/sudoers
      state: present
      regexp: '^%{{ domain_admin_user_group }}'
-     line: '%{{ domain_admin_user_group }} ALL=(ALL:ALL) ALL'
+     line: '%{{ domain_admin_user_group }} ALL=(ALL:ALL) NOPASSWD:ALL'
      validate: 'visudo -cf %s'
   when: domain_admin_user_group is defined
