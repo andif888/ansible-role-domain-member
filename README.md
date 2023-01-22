@@ -1,6 +1,6 @@
 # ansible-role-domain-member
 
-Joins linux to AD domain
+Role to join Debian/Ubuntu to a Microsoft AD Domain
 
 ## Table of content
 
@@ -108,8 +108,8 @@ None.
 
 ## License
 
-GPLv3
+license (GPL-2.0-or-later, MIT, etc)
 
 ## Author
 
-Hotzenplotz
+andif888
