@@ -1,5 +1,6 @@
 ---
-pkgs: 
+# @var domain_member_pkgs:description: Required packages to install
+domain_member_pkgs: 
   - realmd
   - sssd
   - sssd-tools
@@ -10,7 +11,28 @@ pkgs:
   - libnss-sss
   - libpam-sss
   - packagekit
-  - ntp
-  - ntpdate
+  - python3-pexpect
 
-domain_admin_user_short: administrator
+# @var domain_admin_user_short:description: username to join domain
+domain_admin_user_short: "administrator"
+
+# @var domain_admin_password:description: password of the username to join domain
+domain_admin_password: ""
+
+# @var dns_domain_name:description: AD Domain to join
+dns_domain_name: "domain.local"
+
+# @var domain_ou_path:description: join into a specific OU
+# domain_ou_path: "OU=computers,OU=infra,DC=domain,DC=local"
+
+# @var domain_admin_user_group:description: AD group gets added to sudoers
+# domain_admin_user_group: "Domain-Admins"
+
+# @var domain_member_allow_userlogin_without_fqdn:description: >
+# Allow user login with short user name.
+# Example: user1 instead of user1@domain.local
+# @end
+domain_member_allow_userlogin_without_fqdn: true
+
+# @var domain_member_allow_ssh_password_auth_for_users:description: Allow ssh password authentication for users
+domain_member_allow_ssh_password_auth_for_users: false

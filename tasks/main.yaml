@@ -1,90 +1,68 @@
 ---
 - name: Installing Required packages
-  apt: 
-    name: "{{ pkgs }}"
+  ansible.builtin.apt:
+    name: "{{ domain_member_pkgs }}"
     update_cache: yes
     state: present
 
-- name: Add ntp servers
-  lineinfile:
-    path: /etc/ntp.conf
-    line: 'server {{ item }}'
-  with_items: "{{ ntp_client_ntp_server_ip }}"
-  when: ntp_client_ntp_server_ip is defined
-
-- name: Sync time with AD
-  shell: systemctl stop ntp ; ntpdate {{ ntp_client_ntp_server_ip[0] }} && systemctl start ntp
-  register: timesync_result
-  changed_when: false
-  when: 
-    - ntp_client_ntp_server_ip is defined
-    - ntp_client_ntp_server_ip | length > 0
-
-- name: Install pexpect using pip
-  pip:
-    name: pexpect
-
 - name: Checking Domain Join status
-  shell: /bin/bash -c "/usr/sbin/realm discover {{ dns_domain_name }} | grep configured"
+  ansible.builtin.shell: /bin/bash -c "/usr/sbin/realm discover {{ dns_domain_name }} | grep configured"
   register: ad_status
   changed_when: false
   ignore_errors: true
 
-
 - name: Join linux into domain into specific OU
-  expect:
+  ansible.builtin.expect:
       command: /bin/bash -c "/usr/sbin/realm join {{ dns_domain_name }} --user={{ domain_admin_user_short }} --computer-ou={{ domain_ou_path }}"
       responses:
           Password.*: "{{ domain_admin_password }}"
-  when: 
+  when:
     - ad_status.stdout is search("configured.*no*")
     - domain_ou_path is defined
 
 - name: Join linux into domain into default Computer OU
-  expect:
+  ansible.builtin.expect:
       command: /bin/bash -c "/usr/sbin/realm join {{ dns_domain_name }} --user={{ domain_admin_user_short }}"
       responses:
           Password.*: "{{ domain_admin_password }}"
-  when: 
+  when:
     - ad_status.stdout is search("configured.*no*")
     - domain_ou_path is undefined
 
 - name: Allow User Login without FQDN
-  lineinfile: 
-     backup: yes
+  ansible.builtin.lineinfile:
+     backup: true
      state: present
      dest: /etc/sssd/sssd.conf
      regexp: '^{{ item.search }}'
      line: '{{ item.replace }}'
-  with_items:
+  loop:
       - { search: 'use_fully_qualified_names', replace: 'use_fully_qualified_names = False' }
       - { search: 'fallback_homedir', replace: 'fallback_homedir = /home/%u' }
-    
+  when: domain_member_allow_userlogin_without_fqdn
   notify:
       - restart sssd
 
-- name: Allow Password Auth for all users except root
-  lineinfile: 
+- name: Allow SSH password auth for all users except root
+  ansible.builtin.lineinfile: 
      backup: yes
      state: present
      dest: /etc/ssh/sshd_config
      regexp: '^{{ item.search }}'
      line: '{{ item.replace }}'
-  with_items:      
+  loop:      
       - { search: 'PasswordAuthentication', replace: 'PasswordAuthentication yes' }
-      
-  notify:
-      - restart sshd
+  when: domain_member_allow_ssh_password_auth_for_users
 
 - name: Update pam.d common-session to autocreate home-dir
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pam.d/common-session
     state: present
     regexp: '^session optional pam_mkhomedir.so skel=/etc/skel umask=077'
     line: 'session optional pam_mkhomedir.so skel=/etc/skel umask=077'
 
 - name: Updating sudors for Domain Admins users
-  lineinfile: 
+  ansible.builtin.lineinfile:
      path: /etc/sudoers
      state: present
      regexp: '^%{{ domain_admin_user_group }}'
