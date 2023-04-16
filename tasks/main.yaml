@@ -61,11 +61,11 @@
     regexp: '^session optional pam_mkhomedir.so skel=/etc/skel umask=077'
     line: 'session optional pam_mkhomedir.so skel=/etc/skel umask=077'
 
-- name: Updating sudors for Domain Admins users
-  ansible.builtin.lineinfile:
-     path: /etc/sudoers
-     state: present
-     regexp: '^%{{ domain_admin_user_group }}'
-     line: '%{{ domain_admin_user_group }} ALL=(ALL:ALL) NOPASSWD:ALL'
-     validate: 'visudo -cf %s'
+- name: "Updating sudors for Domain Admins users"
+  ansible.builtin.template:
+    src: templates/sudoers.j2
+    dest: /etc/sudoers.d/domain-admins
+    owner: root
+    group: root
+    mode: '440'
   when: domain_admin_user_group is defined
